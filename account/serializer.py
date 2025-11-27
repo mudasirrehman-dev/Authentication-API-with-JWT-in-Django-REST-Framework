@@ -40,3 +40,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'name', 'email']
+        
+class UserChangePasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=255, style={'input_type': 'password'} , write_only=True)
+    password2 = serializers.CharField(max_length=255, style={'input_type': 'password'} , write_only=True)
+    
+    class Meta:
+        fields = ['password','password2']
+        
+    #Now Validate the password and confirm password
+    def validate(self, attrs):
+        password = attrs.get('password')
+        password2 = attrs.get('password2')
+        user = self.context.get('user')
+        if password != password2:
+            raise serializers.ValidationError("Password did not match to confirm password!")
+        user.set_password(password)
+        user.save()
+        return attrs
